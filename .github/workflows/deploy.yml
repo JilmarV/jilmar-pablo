@@ -30,30 +30,24 @@ jobs:
             VITE_BACKEND_URL=${{ secrets.VITE_BACKEND_URL }}
         run: |
           set -e
-          echo "Configurando clave SSH para conectar al servidor"
           mkdir -p ~/.ssh
           echo "$SERVER_PRIVATE_KEY" > ~/.ssh/server_key
           chmod 600 ~/.ssh/server_key
           ssh-keyscan -p "$SSH_PORT" -H "$HOST_NAME" >> ~/.ssh/known_hosts
 
-          echo "Conectando al servidor para hacer deploy..."
-          ssh -T -p "$SSH_PORT" -o StrictHostKeyChecking=no -i ~/.ssh/server_key "$USER_NAME@$HOST_NAME" << 'EOF'
+          ssh -T -p "$SSH_PORT" -o StrictHostKeyChecking=no -i ~/.ssh/server_key "$USER_NAME@$HOST_NAME" <<EOF
             set -e
-            set -x
-
             mkdir -p ~/.ssh
             echo "$GIT_DEPLOY_KEY" > ~/.ssh/deploy_key
             chmod 600 ~/.ssh/deploy_key
             ssh-keyscan -H github.com >> ~/.ssh/known_hosts
 
             if [ ! -d "$PROJECT_PATH/.git" ]; then
-              echo "Clonando proyecto..."
               mkdir -p "$(dirname "$PROJECT_PATH")"
               GIT_SSH_COMMAND="ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no" git clone "$GIT_REPO" "$PROJECT_PATH"
             fi
 
             cd "$PROJECT_PATH"
-            echo "Sincronizando repositorio..."
             GIT_SSH_COMMAND="ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no" git fetch --all
             GIT_SSH_COMMAND="ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no" git checkout main
             GIT_SSH_COMMAND="ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no" git reset --hard origin/main
