@@ -1,0 +1,15 @@
+from sqlalchemy import Column, Integer, String, ForeignKey, DateTime
+from sqlalchemy.orm import relationship
+from datetime import datetime
+from app.database import Base
+
+class Maintenance(Base):
+    _tablename_ = "maintenances"
+
+    id = Column(Integer, primary_key=True, index=True)
+    type = Column(String)  # Example: 'oil change', 'general inspection'
+    notes = Column(String)
+    date = Column(DateTime, default=datetime.utcnow)
+
+    car_id = Column(Integer, ForeignKey("cars.id"))
+    car = relationship("Car", back_populates="maintenances")
