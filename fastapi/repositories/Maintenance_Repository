@@ -1,0 +1,15 @@
+from sqlalchemy.orm import Session
+from app import models, schemas
+
+def create_maintenance(db: Session, maintenance: schemas.MaintenanceCreate):
+    db_maintenance = models.Maintenance(**maintenance.dict())
+    db.add(db_maintenance)
+    db.commit()
+    db.refresh(db_maintenance)
+    return db_maintenance
+
+def get_maintenances(db: Session):
+    return db.query(models.Maintenance).all()
+
+def get_maintenance_by_id(db: Session, maintenance_id: int):
+    return db.query(models.Maintenance).filter(models.Maintenance.id == maintenance_id).first()
